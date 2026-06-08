@@ -1,0 +1,261 @@
+
+NOTE: Write your answers to Part 1 here!
+
+=================================
+    Program 1: listAddStart.c
+=================================
+
+Paste the error message here:
+listAddStart.c:37:19: error: allocation of insufficient size '8' for type 'struct node' with size '16' [-Werror,-Walloc-size]
+   37 |         struct node *n = malloc(sizeof(n));
+      |                          ^
+1 error generated.
+
+Briefly explain why the error occurred:
+n is a pointer which takes up exactly 8 bytes, but the struct takes up 16 bytes of memory.
+The code only allocates 8 bytes instead of the required 16. 
+If the program were allowed to run, trying to access fields in that struct beyond the first 8 bytes would trigger a memory corruption bug.
+
+
+Briefly describe how the program can be fixed:
+change the argument passed to malloc which is replace "n" with "*n" or "struct node"
+
+=================================
+    Program 2: shuffleArray.c
+=================================
+
+Paste the error message here:
+paulinnnn@square-2 sanitizers % ./shuffleArray
+Enter array size: 5
+Enter array values: 3 1 4 1 5
+=================================================================
+==78724==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x6020000000d5 at pc 0x000100cb61b0 bp 0x00016f5bab00 sp 0x00016f5ba280
+WRITE of size 4 at 0x6020000000d5 thread T0
+    #0 0x000100cb61ac in scanf_common(void*, int, bool, char const*, char*)+0x7c4 (libclang_rt.asan_osx_dynamic.dylib:arm64+0x221ac)
+    #1 0x000100cb668c in scanf+0x64 (libclang_rt.asan_osx_dynamic.dylib:arm64+0x2268c)
+    #2 0x000100844b54 in main shuffleArray.c:28
+    #3 0x000194136b94 in start+0x17b8 (dyld:arm64e+0x6b94)
+
+0x6020000000d5 is located 0 bytes after 5-byte region [0x6020000000d0,0x6020000000d5)
+allocated by thread T0 here:
+    #0 0x000100ce8e24 in malloc+0x70 (libclang_rt.asan_osx_dynamic.dylib:arm64+0x54e24)
+    #1 0x0001008449d0 in main shuffleArray.c:20
+    #2 0x000194136b94 in start+0x17b8 (dyld:arm64e+0x6b94)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow shuffleArray.c:28 in main
+
+
+Briefly explain why the error occurred:
+We only allocated 5 bytes of memory, when we set array size 5
+However vals is intended to store array of 5 integers, which takes up 5 * 4 = 20 memory
+So while trying to write into that buffer, it will overstepped the boundary, and then trigger
+the heap-buffer-overflow.
+
+
+Briefly describe how the program can be fixed:
+Instead of just maxVals, the argument passed to malloc should be 
+(maxVals * sizeof(int))
+
+=================================
+    Program 3: reverseArray.c
+=================================
+
+Paste the error message here:
+Enter array size: 5 
+Enter array values: 3 1 4 1 5
+Original array: [3, 1, 4, 1, 5]
+=================================================================
+==79752==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000001c14 at pc 0x000100a81254 bp 0x00016f37e990 sp 0x00016f37e988
+READ of size 4 at 0x603000001c14 thread T0
+    #0 0x000100a81250 in reverse reverseArray.c:42
+    #1 0x000100a80bd0 in main reverseArray.c:31
+    #2 0x000194136b94 in start+0x17b8 (dyld:arm64e+0x6b94)
+
+0x603000001c14 is located 0 bytes after 20-byte region [0x603000001c00,0x603000001c14)
+allocated by thread T0 here:
+    #0 0x000101010e24 in malloc+0x70 (libclang_rt.asan_osx_dynamic.dylib:arm64+0x54e24)
+    #1 0x000100a809c8 in main reverseArray.c:17
+    #2 0x000194136b94 in start+0x17b8 (dyld:arm64e+0x6b94)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow reverseArray.c:42 in reverse
+
+
+Briefly explain why the error occurred:
+The program passed the varible numVals, which is maxVals, to function reverse
+When accese arr[size - i] where we could possibly access arr[maxVals], 
+but we have only allocated maxVals * int of memory, biggest index is maxVals - 1,
+it will overstepped the boundary and cause the heap-buffer-overflow
+
+Briefly describe how the program can be fixed:
+Pass maxVals or numVals - 1 to reverse
+
+=================================
+    Program 4: listPrepend.c
+=================================
+
+Paste the error message here:
+Enter values: 3 1 4 1 5
+==2653688==WARNING: MemorySanitizer: use-of-uninitialized-value
+    #0 0x559b713edc09 in printList /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listPrepend.c:48:7
+    #1 0x559b713ecfb6 in main /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listPrepend.c:24:2
+    #2 0x7ffa41d56ca7 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7ffa41d56d64 in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x559b71353310 in _start (/import/ravel/2/z5643770/comp2521/lab01/sanitizers/listPrepend+0x32310) (BuildId: 335834fdc4abe61e21493a0da75959815a82a232)
+
+  Uninitialized value was created by a heap allocation
+    #0 0x559b713913c6 in malloc (/import/ravel/2/z5643770/comp2521/lab01/sanitizers/listPrepend+0x703c6) (BuildId: 335834fdc4abe61e21493a0da75959815a82a232)
+    #1 0x559b713ed1dc in listPrepend /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listPrepend.c:29:19
+    #2 0x559b713ecf4d in main /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listPrepend.c:21:10
+    #3 0x7ffa41d56ca7 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+
+SUMMARY: MemorySanitizer: use-of-uninitialized-value /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listPrepend.c:48:7 in printList
+
+
+Briefly explain why the error occurred:
+In this program we insert the very first element into the list, we just return the node after setting
+value but never initialize the pointer-field: n->next.
+So in printList we will not stop at the end of list, and then lead to 
+undefined behavior
+
+Briefly describe how the program can be fixed:
+Delete the if-else at the end of function "listPrepend",
+keeps   n->next = list;
+	    return n;
+
+=================================
+     Program 5: listAppend.c
+=================================
+
+Paste the error message here:
+Enter values: 3 1 4 1 5
+listAppend.c:38:8: runtime error: member access within null pointer of type 'struct node'
+SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior listAppend.c:38:8 
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==84194==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x000100cf4c00 bp 0x00016f10ab90 sp 0x00016f10aaf0 T0)
+==84194==The signal is caused by a WRITE memory access.
+==84194==Hint: address points to the zero page.
+    #0 0x000100cf4c00 in listAppend listAppend.c:38
+    #1 0x000100cf496c in main listAppend.c:22
+    #2 0x000194136b94 in start+0x17b8 (dyld:arm64e+0x6b94)
+
+==84194==Register values:
+ x[0] = 0x0000000000000000   x[1] = 0x0000000000000000   x[2] = 0x0000000000000000   x[3] = 0x00000001028003c0  
+ x[4] = 0x0000000063000000   x[5] = 0x0000000000000000   x[6] = 0x0000000000000000   x[7] = 0x0000000000000000  
+ x[8] = 0x00006020000000f0   x[9] = 0x0000000000000000  x[10] = 0x0000000100dcc000  x[11] = 0x1000000000000000  
+x[12] = 0x0000000000000000  x[13] = 0x0000000101629320  x[14] = 0x000000016f109b88  x[15] = 0x0000000000000000  
+x[16] = 0x0000000000000049  x[17] = 0x0000000000000000  x[18] = 0x0000000000000000  x[19] = 0x000000016f10abe0  
+x[20] = 0x00000002021f4018  x[21] = 0x000000016f10ad28  x[22] = 0x0fffffff0009d6fb  x[23] = 0x00000002021f4018  
+x[24] = 0x00000002021f4150  x[25] = 0x000000016f10ae90  x[26] = 0x0000000000000000  x[27] = 0x0000000000000000  
+x[28] = 0x0000000000000000     fp = 0x000000016f10ab90     lr = 0x0000000100cf4b88     sp = 0x000000016f10aaf0  
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV listAppend.c:38 in listAppend
+
+Briefly explain why the error occurred:
+In function lilstAppend after go through the list, curr is NULL,
+then we try to access curr->next, which is dereferencing a null pointer
+which is undefined behavior
+
+Briefly describe how the program can be fixed:
+change  from curr->next = newNode(value);
+        to 
+             curr = newNode(value);
+
+
+=================================
+  Program 6: listDeleteFirst.c
+=================================
+
+Paste the error message here:
+paulinnnn@square-2 sanitizers % ./listDeleteFirst
+Enter values: 3 1 4 1 5
+Original list: [3, 1, 4, 1, 5]
+=================================================================
+==84837==ERROR: AddressSanitizer: heap-use-after-free on address 0x6020000000d8 at pc 0x000102ac107c bp 0x00016d33ea50 sp 0x00016d33ea48
+READ of size 8 at 0x6020000000d8 thread T0
+    #0 0x000102ac1078 in listDeleteFirst listDeleteFirst.c:50
+    #1 0x000102ac0c00 in main listDeleteFirst.c:36
+    #2 0x000194136b94 in start+0x17b8 (dyld:arm64e+0x6b94)
+
+0x6020000000d8 is located 8 bytes inside of 16-byte region [0x6020000000d0,0x6020000000e0)
+freed by thread T0 here:
+    #0 0x000103044f10 in free+0x74 (libclang_rt.asan_osx_dynamic.dylib:arm64+0x54f10)
+    #1 0x000102ac0fd0 in listDeleteFirst listDeleteFirst.c:49
+    #2 0x000102ac0c00 in main listDeleteFirst.c:36
+    #3 0x000194136b94 in start+0x17b8 (dyld:arm64e+0x6b94)
+
+previously allocated by thread T0 here:
+    #0 0x000103044e24 in malloc+0x70 (libclang_rt.asan_osx_dynamic.dylib:arm64+0x54e24)
+    #1 0x000102ac0964 in main listDeleteFirst.c:22
+    #2 0x000194136b94 in start+0x17b8 (dyld:arm64e+0x6b94)
+
+SUMMARY: AddressSanitizer: heap-use-after-free listDeleteFirst.c:50 in listDeleteFirst
+
+
+Briefly explain why the error occurred:
+In function listDeleteFirst, we free the first node and then access it, which can cause 
+heap-use-after-free problem
+
+Briefly describe how the program can be fixed:
+set a local varible to store second node and then free first node, return second node
+
+
+=================================
+    Program 7: listNumEvens.c
+=================================
+
+Paste the error message here:
+Enter values: 3 1 4 1 5
+==2648922==WARNING: MemorySanitizer: use-of-uninitialized-value
+    #0 0x5605c0068b64 in listNumEvens /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listNumEvens.c:31:7
+    #1 0x5605c0067fb6 in main /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listNumEvens.c:24:40
+    #2 0x7f643ce21ca7 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7f643ce21d64 in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5605bffce310 in _start (/import/ravel/2/z5643770/comp2521/lab01/sanitizers/listNumEvens+0x32310) (BuildId: b01bcddeb29126674434ccf292465272e7c87692)
+
+  Uninitialized value was created by a heap allocation
+    #0 0x5605c000c3c6 in malloc (/import/ravel/2/z5643770/comp2521/lab01/sanitizers/listNumEvens+0x703c6) (BuildId: b01bcddeb29126674434ccf292465272e7c87692)
+    #1 0x5605c0069241 in newNode /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listNumEvens.c:52:19
+    #2 0x5605c006824d in listAppend /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listNumEvens.c:40:10
+    #3 0x5605c0067f4d in main /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listNumEvens.c:21:10
+    #4 0x7f643ce21ca7 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+
+SUMMARY: MemorySanitizer: use-of-uninitialized-value /import/ravel/2/z5643770/comp2521/lab01/sanitizers/listNumEvens.c:31:7 in listNumEvens
+
+
+
+Briefly explain why the error occurred:
+when creating each new node, didnt initialize the value, so in line 
+31, when try to access, it will end up with "use-of-uninitialized-value". 
+
+
+Briefly describe how the program can be fixed:
+add "n->value = value" in newNode
+
+
+=================================
+ Program 8: mostFrequentLetter.c
+=================================
+
+Paste the error message here:
+Enter some text: hello world
+==2662126==WARNING: MemorySanitizer: use-of-uninitialized-value
+    #0 0x55f987881f5e in mostFrequent /import/ravel/2/z5643770/comp2521/lab01/sanitizers/mostFrequentLetter.c:35:7
+    #1 0x55f987880f0d in main /import/ravel/2/z5643770/comp2521/lab01/sanitizers/mostFrequentLetter.c:17:16
+    #2 0x7f714aca5ca7 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7f714aca5d64 in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x55f9877e7300 in _start (/import/ravel/2/z5643770/comp2521/lab01/sanitizers/mostFrequentLetter+0x32300) (BuildId: a9e3eedbc8dd9bf4241657a6a5f9c9a55d06fe3d)
+
+  Uninitialized value was created by an allocation of 'counts' in the stack frame
+    #0 0x55f987881094 in mostFrequent /import/ravel/2/z5643770/comp2521/lab01/sanitizers/mostFrequentLetter.c:22:2
+
+SUMMARY: MemorySanitizer: use-of-uninitialized-value /import/ravel/2/z5643770/comp2521/lab01/sanitizers/mostFrequentLetter.c:35:7 in mostFrequent
+Exiting
+
+Briefly explain why the error occurred:
+since we never initialize the array, all it has is random garbage data.
+so when you try to access this garbage data, MemorySanitizer flags a use-of-uninitialized-value
+
+Briefly describe how the program can be fixed:
+int counts[ALPHABET_SIZE] = {0}'
+
