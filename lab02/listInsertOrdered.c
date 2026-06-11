@@ -66,14 +66,22 @@ struct node *listInsertOrdered(struct node *list, int value) {
 	if (list == NULL) {
 		return newNode(value);
 	}
-	struct node *new = newNode(value);
-	if (list->value > value) {
-		new->next = list;
-	} else if (list->next->value > value) {
+	
+	if (list->next == NULL) {
+		struct node *new = newNode(value);
+		if (list->value > value) {
+			new->next = list;
+			return new;
+		} else {
+			list->next = new;
+			return list;
+		}
+	}
 
+	if (list->next->value > value) {
+		struct node *new = newNode(value);
 		new->next = list->next;
 		list->next = new;
-
 	} else {
 		list->next = listInsertOrdered(list->next, value);
 	}
