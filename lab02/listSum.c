@@ -8,7 +8,7 @@
 
 int listSum(struct list *list);
 
-// int listSumhelper(struct list *list);
+int helperfunc(struct node *list);
 
 int main(void) {
 	printf("Enter list size: ");
@@ -41,16 +41,18 @@ int main(void) {
 // (unless you are adding function prototypes)
 ////////////////////////////////////////////////////////////////////////
 // Your task
-// int listSumhelper(struct list *list) {
-
-// }
-int listSum(struct list *list) {
+int helperfunc(struct node *list) {
 	if (list == NULL) return 0;
 
 	if (list->next == NULL) return list->value;
 
+	return helperfunc(list->next) + list->value;
+}
 
 
-	return listSum(list->next) + list->value;
+
+int listSum(struct list *list) {
+
+	return helperfunc(list->head);
 }
 

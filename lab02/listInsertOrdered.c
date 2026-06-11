@@ -63,31 +63,21 @@ bool listIsSorted(struct node *list) {
 // Your task
 
 struct node *listInsertOrdered(struct node *list, int value) {
-	if (list == NULL) {
-		return newNode(value);
-	}
-	
-	if (list->next == NULL) {
-		struct node *new = newNode(value);
-		if (list->value > value) {
-			new->next = list;
-			return new;
-		} else {
-			list->next = new;
-			return list;
-		}
-	}
+    // Base Case 1: Empty list
+    if (list == NULL) {
+        return newNode(value);
+    }
+    
+    // Base Case 2: Value belongs at the front of the current list
+    if (value <= list->value) {
+        struct node *new = newNode(value);
+        new->next = list;
+        return new;
+    }
 
-	if (list->next->value > value) {
-		struct node *new = newNode(value);
-		new->next = list->next;
-		list->next = new;
-	} else {
-		list->next = listInsertOrdered(list->next, value);
-	}
-
-
-	return list;
-
+    // Recursive Step: Value belongs deeper in the list
+    list->next = listInsertOrdered(list->next, value);
+    
+    return list;
 }
 

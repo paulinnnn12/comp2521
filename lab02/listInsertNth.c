@@ -8,6 +8,8 @@
 
 void listInsertNth(struct list *list, int n, int value);
 
+struct node *helperfunc(struct node *list, int n, int value);
+
 int main(void) {
 	printf("Enter list size: ");
 	int size = 0;
@@ -52,8 +54,29 @@ int main(void) {
 // (unless you are adding function prototypes)
 ////////////////////////////////////////////////////////////////////////
 // Your task
+struct node * helperfunc(struct node *list, int n, int value) {
+	if (list == NULL) {
+		return newNode(value);
+	}
+
+	if (n == 0) {
+		struct node *new = newNode(value);
+		new->next = list;
+		return new;
+	}
+
+	list->next = helperfunc(list->next, n - 1, value);
+
+	return list;
+}
+
+
+
 
 void listInsertNth(struct list *list, int n, int value) {
-	// TODO
+
+	list->head = helperfunc(list->head, n, value);
+
+	return;
 }
 
