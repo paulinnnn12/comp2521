@@ -1,0 +1,56 @@
+
+NOTE:
+- For bstNumLeaves, bstRange and bstLevelOrder, your time complexities
+  should be in terms of either:
+  - n, where n is the number of nodes in the tree, or
+  - h, where h is the height of the tree
+
+- For numCommonValues, your time complexity should be in terms of one or
+  more of the following:
+  - n1 (the number of nodes in t1)
+  - h1 (the height of t1)
+  - n2 (the number of nodes in t2)
+  - h2 (the height of t2)
+
+=================
+  bstNumLeaves
+=================
+
+- Worst-case time complexity: O(n)
+
+- Explanation: To count the total number of leaves
+the function must visit every single node in the tree exactly once
+therefore total time grows linearly with n
+
+=================
+    bstRange
+=================
+
+- Worst-case time complexity: O(n)
+
+- Explanation:
+the Worst case is in a completely unbalanced tree(straight line);
+function has to go through the whole tree to get the min and max
+in this case, it is O(n);
+
+=================
+  bstLevelOrder
+=================
+
+- Worst-case time complexity: O(n)
+
+- Explanation: 
+this function uses a queue structure, every node in bst has to go inside the queue
+and dequeue, which are both constant time opration. so time grows linearly with n.
+
+=================
+ numCommonValues
+=================
+
+- Worst-case time complexity: O(n1 * n2)
+
+- Explanation: 
+this function visits every node in given tree1 and call function bstFind to search through t2,
+in this process, O(n1) is confirmed, and for the worst case of searching for a value in t2, 
+it could be O(n2) when t2 is completely unbalanced(straight line),
+so the worst case time complexity is O(n1 * n2)
