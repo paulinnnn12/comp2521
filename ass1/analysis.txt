@@ -13,9 +13,17 @@ NOTE:
      CatalogueClosest
 --------------------------
 
-Worst-case time complexity:
+Worst-case time complexity: O(h)
 
 Explanation:
+nodeClosestHelp goes from root to leaf through the tree, at
+each call it does a constant amount of work (comparing targetCode against
+current code) and then returns immediately or makes one recursive call into
+a single subtree(left or right).
+Because it only goes into one direction, the number of nodes visited is 
+decided by the length of root-leaf path. which is at most h.
+since each call does constant work, O(1), the overall worst case 
+complexity is O(h)
 
 
 
@@ -23,9 +31,18 @@ Explanation:
     CatalogueLevelOrder
 --------------------------
 
-Worst-case time complexity:
+Worst-case time complexity: O(n)
 
 Explanation:
+This function has to go through entire tree to loop through every node to decide
+if it is qualified to be put in to the given array, so the time complexity
+can not be lower than O(n).
+Specificlly, CatalogueLevelOrder uses queue to do a LevelOrder traversal.
+every node in the tree is enqueued exactly once and dequeued once.
+both operation takes constant time. and copying each node course into 
+the given array is also constant time per node.
+other operation are not n related.
+so the worst case complexity is O(n)
 
 
 
@@ -33,9 +50,17 @@ Explanation:
      CatalogueGetRange
 --------------------------
 
-Worst-case time complexity:
+Worst-case time complexity:O(h + k)
 
 Explanation:
+as a recursive function, it uses the property of bst to avoid going into
+subtrees that could not possibly contain qualified courses.
+the recursion only follow two paths(possibly one): which is from root down
+towards lowerCode and upperCode, and each of length at most h.
+for node that are in the range, each of it costs O(1) time to visit and
+copy into array.
+so the total work is bounded by the cost of two paths, O(h) plus the number
+of matching course, O(k), the worst case complexity is O(h + k)
 
 
 
@@ -43,9 +68,21 @@ Explanation:
     CatalogueConstruct
 --------------------------
 
-Worst-case time complexity:
+Worst-case time complexity: O(n)
 
 Explanation:
+bstConstruct is given courses[] already sorted by code, so it always chooses
+the middle element of the current range(defined by lo and hi) as the subtree
+root, then recursively build the left half and right half.
+each call does constant work, (computing mid, build newNode and updates)
+since every index in [0, n-1] is used as a "mid" exactly once across the 
+whole recursion, the worst case time complexity is O(n);
+
+on addtion, this construction naturally builds height balanced bst since
+the spilt point is always the middle of the current range, 
+therefore for each node, the height of its two subtree differ by at most 1
+so no rebalancing is actually needed, no single rotation is performed.
+so for every call has the same constant work.
 
 
 
