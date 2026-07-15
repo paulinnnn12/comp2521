@@ -180,29 +180,149 @@ static bool inAdjList(struct adjNode *list, int v) {
 // Your tasks
 
 bool FbFriend(Fb fb, char *name1, char *name2) {
-	// TODO: Task 1 - Implement this function
-	return false;
+	if (FbIsFriend(fb, name1, name2)) return false;
+	int num1 = nameToId(fb, name1);
+	int num2 = nameToId(fb, name2);
+	struct adjNode *curr = fb->adj[num1];
+	if (curr == NULL) fb->adj[num1] = newAdjNode(num2);
+	else {
+		while (curr->next != NULL) {
+			curr = curr->next;
+		}
+		curr->next = newAdjNode(num2);
+	}
+	
+	curr = fb->adj[num2];
+	if (curr == NULL) fb->adj[num2] = newAdjNode(num1);
+	else {
+		while (curr->next != NULL) {
+			curr = curr->next;
+		}
+		curr->next = newAdjNode(num1);
+	}
+	return true;
 }
 
 int FbNumFriends(Fb fb, char *name) {
-	// TODO: Task 2 - Implement this function
-	return -1;
+	int id = nameToId(fb, name);
+
+	int count = 0;
+	struct adjNode *curr = fb->adj[id];
+	while (curr != NULL) {
+		curr = curr->next;
+		count ++;
+	}
+	return count;
 }
 
 List FbMutualFriends(Fb fb, char *name1, char *name2) {
-	// TODO: Task 3 - Implement this function
 	List l = ListNew();
+	int id1 = nameToId(fb, name1), id2 = nameToId(fb, name2);
+	struct adjNode *curr = fb->adj[id1];
+
+	while (curr != NULL) {
+		if (curr->v != id2) {
+			if (inAdjList(fb->adj[id2], curr->v)) {
+				ListAppend(l, fb->names[curr->v]);
+			}
+		}
+		curr = curr->next;
+	}
+	ListSort(l);
 	return l;
 }
 
 bool FbUnfriend(Fb fb, char *name1, char *name2) {
-	// TODO: Task 4 - Implement this function
-	return false;
-}
+	if (!FbIsFriend(fb, name1, name2)) return false;
+	int id1 = nameToId(fb, name1), id2 = nameToId(fb, name2);
+	struct adjNode *curr = fb->adj[id1];
+	struct adjNode *tem = NULL;
+	if (curr->v == id2) {
+		fb->adj[id1] = NULL;
+		free(curr);
+	} else {
+		while (curr->next != NULL) {
+			if (curr->next->v == id2) {
+				tem = curr->next;
+				curr->next = curr->next->next;
+				free(tem);
+				break;
+			}
+			curr = curr->next;
+		}
+	}
+	curr = fb->adj[id2];
+	if (curr->v == id1) {
+		fb->adj[id2] = NULL;
+		free(curr);
+	} else {
+		while (curr->next != NULL) {
+			if (curr->next->v == id1) {
+				tem = curr->next;
+				curr->next = curr->next->next;
+				free(tem);
+				break;
+			}
+			curr = curr->next;
+		}
+	}
 
+	return true;
+}
 int FbFriendRecs1(Fb fb, char *name, struct recommendation recs[]) {
-	// TODO: Task 5 - Implement this function
-	return 0;
+	int id = nameToId(fb, name);
+	int n = fb->numPeople;
+
+	// Mark which people are already friends of `name` (or are `name` themself)
+	bool *isFriend = calloc(n, sizeof(bool));
+
+	isFriend[id] = true;
+	for (struct adjNode *curr = fb->adj[id]; curr != NULL; curr = curr->next) {
+		isFriend[curr->v] = true;
+	}
+
+	// For every non-friend, count how many of `name`'s friends they're
+	// also friends with (i.e. the number of mutual friends)
+	int *mutualCount = calloc(n, sizeof(int));
+
+	for (struct adjNode *f = fb->adj[id]; f != NULL; f = f->next) {
+		for (struct adjNode *fof = fb->adj[f->v]; fof != NULL; fof = fof->next) {
+			int candidate = fof->v;
+			if (!isFriend[candidate]) {
+				mutualCount[candidate]++;
+			}
+		}
+	}
+
+	// Build the recommendations array from the counts
+	int numRecs = 0;
+	for (int i = 0; i < n; i++) {
+		if (mutualCount[i] > 0) {
+			strcpy(recs[numRecs].name, fb->names[i]);
+			recs[numRecs].numMutualFriends = mutualCount[i];
+			numRecs++;
+		}
+	}
+
+	free(isFriend);
+	free(mutualCount);
+
+	// Sort recommendations in descending order of mutual friend count
+	for (int i = 0; i < numRecs - 1; i++) {
+		int best = i;
+		for (int j = i + 1; j < numRecs; j++) {
+			if (recs[j].numMutualFriends > recs[best].numMutualFriends) {
+				best = j;
+			}
+		}
+		if (best != i) {
+			struct recommendation tmp = recs[i];
+			recs[i] = recs[best];
+			recs[best] = tmp;
+		}
+	}
+
+	return numRecs;
 }
 
 ////////////////////////////////////////////////////////////////////////

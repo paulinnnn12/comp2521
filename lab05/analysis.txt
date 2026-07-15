@@ -1,37 +1,47 @@
-
-NOTE:
-- Your time complexities should be in terms of n, where n is the number
-  of people.
-
 ===============
    FbFriend
 ===============
 
-- Worst-case time complexity: O(...)
+- Worst-case time complexity: O(n)
 
-- Explanation: ...
+- Explanation: nameToId() is O(log n) (Map binary search).
+  FbIsFriend() calls inAdjList(), which walks an adjacency list of
+  up to n-1 nodes: O(n). Appending to num1's and num2's adjacency
+  lists each requires walking to the end: O(n) + O(n). Total:
+  O(n), since O(log n) is dominated by the O(n) terms.
 
 ===============
  FbNumFriends
 ===============
 
-- Worst-case time complexity: O(...)
+- Worst-case time complexity: O(n)
 
-- Explanation: ...
+- Explanation: nameToId() is O(log n). Counting nodes in the
+  person's adjacency list is O(n) in the worst case (friends with
+  everyone). Overall: O(n).
 
 ===============
 FbMutualFriends
 ===============
 
-- Worst-case time complexity: O(...)
+- Worst-case time complexity: O(n^2)
 
-- Explanation: ...
+- Explanation: nameToId() is called twice, O(log n) each. The
+  function walks id1's adjacency list (up to n-1 nodes), and for
+  every node calls inAdjList() on id2's list (also up to n-1
+  nodes). That's O(n) iterations of O(n) work: O(n^2). ListSort()
+  on at most n-1 names doesn't add to this. Overall: O(n^2).
 
 ===============
  FbFriendRecs1
 ===============
 
-- Worst-case time complexity: O(...)
+- Worst-case time complexity: O(n^2)
 
-- Explanation: ...
-
+- Explanation: nameToId() is O(log n). Building isFriend[] is
+  O(n). The main nested loop walks each of `name`'s friends
+  (up to n-1) and, for each, every friend-of-friend (up to n-1),
+  doing O(1) work per pair thanks to isFriend[]: O(n^2). Building
+  recs[] is O(n). Sorting recs[] (selection sort, up to n-1
+  entries) is O(n^2). Overall: O(n^2).
+  
