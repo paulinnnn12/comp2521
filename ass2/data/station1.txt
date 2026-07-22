@@ -1,0 +1,13 @@
+6
+0 n airlock
+1 n laboratory
+2 e pod_alpha
+3 n bridge
+4 n medbay
+5 e pod_beta
+0 1 2
+1 2 7
+0 3 4
+3 4 1
+4 5 3
+1 4 6

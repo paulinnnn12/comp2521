@@ -1,0 +1,126 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+
+main()
+{
+	if [ $# -ne 1 ]
+	then
+		echo "usage: $0 <task number (1-4)>"
+		exit 1
+	fi
+
+	case "$1" in
+		1|2|3|4) ;;
+		*) echo "invalid task number '$1'"
+		   exit 1 ;;
+	esac
+
+	compile
+	echo
+
+	case "$1" in
+		1) test_task1 ;;
+		2) test_task2 ;;
+		3) test_task3 ;;
+		4) test_task4 ;;
+	esac
+
+	echo
+}
+
+compile()
+{
+	echo "================================"
+	echo "** Compilation"
+	echo "================================"
+
+	make
+
+	if [ $? -ne 0 ]
+	then
+		exit 1
+	fi
+}
+
+test_task1()
+{
+	echo "================================"
+	echo "** Tests for Task 1"
+	echo "================================"
+	echo "** Note that this simply runs ./testStation"
+	echo
+
+	./testStation
+}
+
+test_task2()
+{
+	echo "================================"
+	echo "** Tests for Task 2"
+	echo "================================"
+	echo
+
+	test_evacuation 2
+}
+
+test_task3()
+{
+	echo "================================"
+	echo "** Tests for Task 3"
+	echo "================================"
+	echo
+
+	test_evacuation 3
+}
+
+test_task4()
+{
+	echo "================================"
+	echo "** Tests for Task 4"
+	echo "================================"
+
+	test_evacuation 4
+}
+
+test_evacuation()
+{
+	task_no="$1"
+
+	test_data_dir="task$task_no"
+
+	for in_file in "$test_data_dir"/*.in
+	do
+		test_number="$(basename "$in_file" .in)"
+
+		echo "--------------------------------"
+		echo "** Test $test_number"
+		echo "--------------------------------"
+
+		out_file="$test_data_dir/$test_number.out"
+		exp_file="$test_data_dir/$test_number.exp"
+
+		./testEvacuation "$in_file" > "$out_file"
+
+		if [ $? -ne 0 ]
+		then
+			echo "** Test failed (runtime error)"
+		elif [ ! -e "$exp_file" ]
+		then
+			echo "** No expected output available - check the output in $out_file manually"
+		elif ! diff "$out_file" "$exp_file" > /dev/null
+		then
+			echo "** Test failed (incorrect output)"
+			echo "** Your output (in $out_file):"
+			cat "$out_file"
+			echo
+			echo "** Expected output (in $exp_file):"
+			cat "$exp_file"
+		else
+			echo "** Test passed"
+		fi
+	done
+}
+
+main "$@"
+

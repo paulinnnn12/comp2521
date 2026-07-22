@@ -1,0 +1,20 @@
+# Number of rooms
+6
+
+# Room format: <room ID> <type> <room name>
+# type n = normal room, e = escape pod room
+0 n airlock
+1 n laboratory
+2 e pod_alpha
+3 n bridge
+4 n medbay
+5 e pod_beta
+
+# Corridor format: <room A> <room B> <travel time>
+# Corridors are undirected
+0 1 2
+1 2 7
+0 3 4
+3 4 1
+4 5 3
+1 4 6

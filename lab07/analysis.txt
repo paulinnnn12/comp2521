@@ -1,0 +1,55 @@
+
+NOTE:
+- Your time complexities should be in terms of one or more of the
+  following:
+  - V, the number of vertices
+  - E, the number of edges
+
+================
+  shortestPath
+================
+
+- Worst-case time complexity: O(v^2)
+
+- Explanation: shortestPath uses the adjacency matrix representation and 
+  performs a standard BFS from src
+  Since visited array ensures each vertex is enqueued and dequeued 
+  at most once, the outer while loop runs O(V) times overall.
+  for every vertex dequeued, the inner loop
+  scans all V entries of that vertex's row in the adjacency matrix
+  find its neighbours.
+  This gives O(V) work per dequeue, so the BFS traversal costs O(V^2). 
+  Reconstructing the path takes at most O(V) time.
+  The overall worst-case time complexity is therefore O(V^2).
+
+================
+     cycle
+================
+
+- Worst-case time complexity: O(V + E)
+
+- Explanation:
+  cycle uses the adjacency list representation. In the
+  worst case (no cycle exists), the outer for
+  loop tries every vertex as a BFS root, but each vertex is only ever
+  enqueued and marked visited once across the entire run, since the
+  visited array is shared across all components rather than being reset
+  between BFS calls. This means the total number of dequeues over the
+  whole function is O(V). Each time a vertex u is dequeued, its
+  adjacency list is scanned once to check its neighbours, and since the
+  adjacency list representation only stores each vertex's actual edges,
+  the total work spent scanning adjacency lists across the whole
+  traversal is proportional to the sum of all vertex degrees, which is
+  O(E). Together, the traversal costs O(V + E).
+ 
+  If a cycle is found, reconstructing it afterwards requires building
+  the ancestor chain for the_u and the_v by walking the predecessor
+  array back to the root of their BFS tree, which takes O(V) time in
+  the worst case (a chain can be as long as V vertices), and then
+  comparing the two chains to find their lowest common ancestor and
+  assembling the final path, both of which are also O(V). This
+  reconstruction cost is O(V), which is dominated by the O(V + E)
+  traversal cost.
+ 
+  Combining both parts, the overall worst-case time complexity is
+  O(V + E).

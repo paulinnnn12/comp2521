@@ -1,0 +1,29 @@
+
+========================================================================
+                                Journal
+========================================================================
+
+Please see the Journal section of the spec for more details on what is
+required.
+
+The journal should be formatted like so:
+
+[Date 1]
+- [Entry 1]
+- [Entry 2]
+- ...
+
+[Date 2]
+- [Entry 1]
+- [Entry 2]
+- ...
+
+...
+
+========================================================================
+
+[16/07] <--- change this if necessary
+- Read the assignment spec and downloaded the files
+
+
+
