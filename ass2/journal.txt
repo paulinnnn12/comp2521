@@ -1,29 +1,240 @@
-
 ========================================================================
                                 Journal
 ========================================================================
 
-Please see the Journal section of the spec for more details on what is
-required.
-
-The journal should be formatted like so:
-
-[Date 1]
-- [Entry 1]
-- [Entry 2]
-- ...
-
-[Date 2]
-- [Entry 1]
-- [Entry 2]
-- ...
-
-...
 
 ========================================================================
 
-[16/07] <--- change this if necessary
+[16/07] --------------------------------------------
 - Read the assignment spec and downloaded the files
 
 
+[27/07] --------------------------------------------
+- Debugging an undersized malloc in StationNew
 
+In my first draft, I wrote:
+Station new = malloc(sizeof(Station));
+
+and later:
+Station new = malloc(sizeof(Station *));
+
+Given that in station.h defines:
+""typedef struct station * Station;""
+
+Station is already a pointer type, so sizeof(Station) = size of one pointer(8 bytes);
+And Station * is a pointer-to-a-pointer, which is also just 8 bytes.
+so the correct version should be Station new = malloc(sizeof(struct station));
+
+what is tricky about this is that it does not show up immediately, instead, when running the testing, 
+bugs occured at somewhere unexpected. acter carefully checking, nothing wrong about that function
+but the since the report showed that there is something wrong about the memory allocation, 
+I went back and check the real problem. After some research, I figured out that if I only 
+asked for 8 bytes of memory but writing beyond that, program is not going to crash immediately 
+beacuse what I did is just quietly overwrite bytes that belongs to something else or bytes that
+happen to be unused. but, for example, free() is called, the allocator's internal bookkeeping is 
+broken. So I end up debugging a crash in a function that has nothing to do with the actual bug,
+with no obvious link back to StationNew.
+
+
+- Counter reset inside loop and constantly swaping in data
+
+int StationGetCorridorsFrom(Station s, int room, struct corridor corridors[]) {
+    for (int i = 0; i < s->n_corridor; i ++) {
+        int from = s->corridors[i].fromRoom;
+        int to = s->corridors[i].toRoom;
+        int count = 0;
+        if (from == room || to == room) {
+            if (to == room) {
+                s->corridors[i].fromRoom = to;
+                s->corridors[i].toRoom = from;
+            }
+            corridors[count++] = s->corridors[i];
+        }
+    }
+    return count;
+}
+in this original code, including wrong things of 
+1. reset counter each time, so that only the first position of corridors could be possibly modified,
+(discovered in compiling stage:
+z5643770@vx23:~/comp2521/ass2$ make
+clang -Wall -Wvla -Werror -gdwarf-4 -fsanitize=address,leak,undefined -o testStation testStation.c Station.c
+Station.c:120:12: error: use of undeclared identifier 'count'
+  120 |     return count;
+      |            ^
+1 error generated.
+make: *** [Makefile:26: testStation] Error 1
+)
+
+2. I simply copy the whole struct corridor into the array, so I swap the data if the given room number
+is not as fromRoom, which is unneccessary and the program becomes not consistant: after some calls the
+data changed.
+(after seccueed the tests, suddenly realize not need to change stored data, just modify the array)
+3. did not sort the array properly.
+(while reading interface comments, this function asks for sorting by toRoom, 
+at first I was considering writing my own sort, but I googled and choose to use qsort() and I 
+follow the pattern of sorting int in ascending order, then write compareByToRoom())
+
+
+[28/07] --------------------------------------------
+- Worked on Task 2 (reachableRooms), got it finished and passing both provided tests. Also
+started on Task 3 (fastestEscape), sketching out a Dijkstra skeleton.
+
+for task 2 i used dfs starting from every escape pod room at once, instead of running a search
+from each individual room. since corridors go both ways, being reachable from a pod is the same
+thing as being able to reach a pod, so starting from the pods and marking everything found means
+i only need one pass through the rooms instead of running a search from every single one.
+
+- double free crash in realloc
+
+first version i had:
+int *rooms;
+...
+rooms = realloc(rooms, sizeof(int));
+
+this crashed with asan saying double free inside realloc, but i never called free anywhere near
+that code, so at first i had no idea what was even going wrong. turned out rooms was uninitialised
+so it held garbage, and realloc treats any non-NULL pointer as if it came from malloc/realloc
+before. my garbage value happened to match an address that had already been freed somewhere else
+in the program (in stationReader.c), so realloc thought it was being asked to free something that
+was already gone. fixed it by mallocing the array once up front, sized to the number of rooms in
+the station, instead of growing it one int at a time with realloc.
+
+- off by one in the dfs neighbour loop
+
+after the crash was fixed the function ran but returned too few rooms (5 instead of 6 on one
+test). the bug was:
+
+int num = StationGetCorridorsFrom(s, start, corridors);
+while (num > 0) {
+    if (!visited[corridors[num].toRoom]) {}
+}
+num is a count so the valid indices only go up to num - 1, but i was checking corridors[num]
+before decrementing, which reads one past the end of the array, and the corridor at index 0 never
+actually got checked by the time the loop ended. fixed by using an index starting at 0 and looping
+while index < num instead of counting down from num.
+
+- task 3 (still in progress): started writing fastestEscape using dijkstra. before even running
+it i noticed a bug in my findMinIndex helper - i was comparing dist[i] < min_id, which compares a
+distance to an index number rather than to another distance, should be dist[i] < dist[min_id] to
+compare against the current best distance instead. still need to: write the body of
+DijkstrasAlgo, handle the case where fromRoom already has a pod, and fix the path reconstruction
+from pred[], which currently skips over the destination room. continuing next session.
+
+
+[30/07] --------------------------------------------
+- picked task 3 back up, wrote the body of DijkstrasAlgo properly this time (relaxation loop over
+all rooms, picking the closest unvisited room each round). first run gave a heap-buffer-overflow
+inside DijkstrasAlgo:
+
+for (int count = 0; count < nV; count ++) {
+    int u = -1, min_dist = INT_MAX;
+    for (int i = 0; i < nV; i ++) {
+        if (dist[i] < min_dist && !included[i]) {
+            min_dist = dist[i];
+            u = i;
+        }
+    }
+    included[u] = true;   // crash here
+
+if every remaining unvisited room still has dist == INT_MAX (nothing left reachable from what's
+been processed), u never gets set and stays -1, so included[-1] = true writes one byte before the
+array. asan caught it straight away ("1 bytes before 8-byte region"). fixed by breaking out of the
+loop early if u is still -1 after the scan, since there's nothing left worth relaxing.
+
+also had leaks on the same run - result.rooms from reachableRooms, plus pred, dist, included
+inside fastestEscape were never freed before returning. added frees for all four right before the
+final return.
+
+- after the crash/leaks were fixed, tests still failed but now with wrong output instead of a
+runtime error - path was always missing the last room, e.g. got "0 -> 3 -> 4" instead of
+"0 -> 3 -> 4 -> 5". bug was in the path walk-back:
+
+int curr = pred[closest_pod];
+while (curr != fromRoom) {
+    route.rooms[count++] = curr;
+    curr = pred[curr];
+}
+
+starting from pred[closest_pod] instead of closest_pod itself meant the destination room never
+got added to the array. fixed by starting curr at closest_pod instead, walking back to fromRoom
+same as before. all task 3 tests passing after this.
+
+- task 4 (fastestEscapeAvoiding), passed all tests
+
+approach: instead of modifying dijkstra to skip blocked corridors, i just build a whole new
+Station that's a copy of the original but leaves out any corridor that's in the blocked list,
+then call fastestEscape on the copy. means i don't need a second version of dijkstra or any
+extra blocked-corridor logic inside the pathfinding itself, reuse everything from task 3 as is.
+
+static bool check_block(struct blockedCorridor blocked[], int room1, int room2) {
+	if (room1 == blocked->roomA && room2 == blocked->roomB) {
+		return true;
+	} else if (room2 == blocked->roomA && room1 == blocked->roomB) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+building the copy: loop through every room, copy its name and pod status across, then loop
+through every other room and copy the corridor across unless it's blocked. free the copy after
+getting the route back so there's no leak.
+
+all 4 tasks done and passing.
+
+[30/07 - later] --------------------------------------------
+- went back through Station.c and evacuation.c one more time before submitting, checking
+correctness properly instead of just relying on the provided tests passing. found two real bugs
+that all four tasks had already "passed" with.
+
+- dijkstra was overwriting dist[i] with no check that the new path was actually shorter
+
+for (int i = 0; i < nV; i ++) {
+    int add_dist = StationContainsCorridor(s, u, i);
+    if (add_dist != NO_CORRIDOR && !included[i]) {
+        dist[i] = dist[u] + add_dist;
+        pred[i] = u;
+    }
+}
+
+this is the one thing dijkstra is actually supposed to guarantee - only update a room's distance
+if the new path through u is shorter than what's already there. as written it just overwrites
+dist[i] any time there's an edge to it, even if the existing value was already better. e.g. if
+room A connects to both B (weight 1) and C (weight 1), and B also connects to C (weight 100), the
+correct dist[C] is 1, but after processing B this code overwrites dist[C] to 1 + 100 = 101,
+destroying the correct value. none of the provided tests happened to have a graph shaped like
+this, so it passed everything anyway, which is exactly why it's worth catching now rather than
+assuming "all tests pass" means the algorithm is actually correct. fixed by only updating when
+the new distance is smaller:
+
+int new_dist = dist[u] + add_dist;
+if (new_dist < dist[i]) {
+    dist[i] = new_dist;
+    pred[i] = u;
+}
+
+- check_block only ever checked the first blocked corridor
+
+static bool check_block(struct blockedCorridor blocked[], int room1, int room2) {
+	if (room1 == blocked->roomA && room2 == blocked->roomB) {
+
+blocked->roomA is the same as blocked[0].roomA, so this never looked at numBlocked at all - it
+only ever checked whether the corridor matched the very first blocked corridor in the array.
+works fine for the sample tests since they only ever block one corridor at a time, but with two
+or more blocked corridors it would silently ignore all but the first one. fixed by looping over
+numBlocked and checking every entry:
+
+static bool check_block(struct blockedCorridor blocked[], int numBlocked,
+		int room1, int room2) {
+	for (int i = 0; i < numBlocked; i ++) {
+		if ((room1 == blocked[i].roomA && room2 == blocked[i].roomB) ||
+		    (room1 == blocked[i].roomB && room2 == blocked[i].roomA)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+both of these are a good reminder that passing the given tests isn't the same as being correct -
+neither bug showed up until i actually read back through the logic asking "what graph would break
+this" instead of just running the same test files again.
