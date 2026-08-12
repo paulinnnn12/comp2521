@@ -1,0 +1,4 @@
+The appropriate one should be edge
+list, since it only stores edges
+in a list which is the most space 
+efficient among all 3.

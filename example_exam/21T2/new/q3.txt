@@ -1,0 +1,7 @@
+in a scenario such as embedded systems which requires
+no extra memory created, and real-time systems that requires
+predictable, and guaranteed performance heap sort could 
+be considered.
+heap sort is a in-place algorithm, so does not create spaces 
+like merge sort, and it is very stable, in O(nlogn) for 
+both best and worst case,

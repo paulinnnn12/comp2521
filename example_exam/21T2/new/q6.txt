@@ -1,0 +1,17 @@
+it is a iterative algorithm and there is no chance to skip
+any single one, so the best case and worst case time
+complexities shall be the same.
+
+first and second loop are related, so we analyse them as 
+one
+we oprate 1 + 2 + 3 + ... + n-1 times the fixed code below:
+after math opration, the times should be n(n-1)
+
+			for (int k = 0; k < 2; k++) {
+				printf("%d %d %d\n", i, j, k);
+			}
+
+this for loop above has a fixed time complexity O(2n),
+since printf is O(n);
+in total, it is n^3;
+so the best and worst case time complexity is O(n^3)

@@ -1,0 +1,7 @@
+I would say separate chaining is the most appropriate for this.
+separate chaining consider each slot in hash table as a 
+linked list, when a hash collision happens, it just append the 
+list.
+Here we are trying to add 1500 keys to 1000 slots, so withouy
+a doubt, for linear probing and double hash does not create
+extra spaces, they don't work, only separate chaining is fine.

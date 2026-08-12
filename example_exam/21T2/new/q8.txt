@@ -1,0 +1,16 @@
+merge sort:
+best case: O(nlogn)
+worst case: O(nlogn)
+average case: O(nlogn)
+
+quicksort:
+best case: O(nlogn)
+worst case: O(n^2)
+average case: O(nlogn)
+
+key differences:
+1. merge requires extra space to split data, makes it not
+in place
+2. merge sort is stable, but quicksort swap can reorder data
+3. performance: merge sort is consistant, but for quick sort
+if unluckily picked bad value, it could be in O(n^2)

@@ -1,0 +1,10 @@
+firstly, insertion sort is a sorting algorithm that runs
+in best case O(n) and worst case O(n^2);
+
+after that, since malloc, randInt and printf 
+can be assumed to always be O(1), we have a fixed 
+time complexity of O(n) above, which is overrall
+O(n + n^2) or O(n);
+
+Finally, we have a worst case time complexity O(n^2)
+and in best case, O(n);

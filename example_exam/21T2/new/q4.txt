@@ -1,0 +1,8 @@
+Yes.
+Euler path requires walk through every edge exactly once 
+and start and end can be different vertices.
+
+Easy way to justify is that if every single vertex is connect
+with even numbers of edges, then this graph shall exist a 
+Euler circuit, and because Euler circuit is just a special 
+case of Euler path, so this graph does exist a Euler graph.
