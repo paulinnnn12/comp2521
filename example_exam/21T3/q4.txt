@@ -1,0 +1,27 @@
+Question 4
+
+Which of the data structures is most suitable? Justify your answer.
+You must use time complexities as a basis for your justification.
+
+Heap
+Implement priority queue with heap can make
+pop: o(1);
+push: O(logn);
+printOrder: 0(n);
+
+in compairson:
+(PrintOrder always in O(n), so lets see how pop and push change)
+Ordered Linked List:
+pop: O(1);
+push: O(n);
+
+Ordered Array：
+pop: O()
+
+AVL Tree:
+pop: O(logn);
+push: O(logn);
+
+Hashtable:
+pop: O(n);
+push: O(1);

@@ -1,0 +1,32 @@
+Question 5
+
+(a)
+
+6
+
+
+(b)
+
+Replace the underlines with the array elements
+
+[0]  [1]  [2]  [3]  [4]  [5]  [6]  [7]  [8]  [9]  [10]  [11]
+14    8    13   6    8    17  5    18   13   18   19    20
+
+
+(c)
+
+After the first pass...
+
+[0]  [1]  [2]  [3]  [4]  [5]  [6]  [7]  [8]  [9]  [10]  [11]
+___  ___  ___  ___  ___  ___  ___  ___  ___  ___  ____  ____
+
+
+After the second pass...
+
+[0]  [1]  [2]  [3]  [4]  [5]  [6]  [7]  [8]  [9]  [10]  [11]
+___  ___  ___  ___  ___  ___  ___  ___  ___  ___  ____  ____
+
+
+Copy the above template as many times as needed
+
+

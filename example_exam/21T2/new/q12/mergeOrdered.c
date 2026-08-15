@@ -1,5 +1,3 @@
-// mergeOrdered.c ... implementation of mergeOrdered function
-
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -7,43 +5,40 @@
 
 #include "list.h"
 
-void helper (struct node * new,struct node *node1, struct node *node2) {
-    if (node1 == NULL && node2 == NULL) {
-        return;
-    }
-
-    if (node1 != NULL && node2 == NULL) {
-        new->next = newNode(node1->value);
-        helper(new->next, node1->next, node2);
-    } else if (node1 == NULL && node2 != NULL) {
-        new->next = newNode(node2->value);
-        helper(new->next, node1, node2->next);
-    }
-    else {
-        int n1 = node1->value;
-        int n2 = node2->value;
-        if (n1 > n2) {
-            new->next = newNode(n2);
-            helper(new->next, node1, node2->next);
-        } else {
-            new->next = newNode(n1);
-            helper(new->next, node1->next, node2);
-        }
-    }
+static void appendNode(struct list *l, struct node *n) {
+	if (l->first == NULL) {
+		l->first = n;
+	} else {
+		l->last->next = n;
+	}
+	l->last = n;
 }
 
+// Worst case time complexity of this solution: O(n + m), where n and m
+// are the lengths of list1 and list2 - each node from each input list
+// is visited exactly once, and the function uses O(1) auxiliary space
+// (excluding the newly allocated output nodes, which are unavoidable).
 struct list *mergeOrdered(struct list *list1, struct list *list2) {
-    struct list *new = ListNew();
-    int n1 = list1->first->value;
-    int n2 = list2->first->value;
-    if (n1 < n2) {
-        new->first = newNode(n1);
-        helper(new->first, list1->first->next, list2->first);
-    } else {
-        new->first = newNode(n2);
-        helper(new->first, list1->first, list2->first->next);
-    }
+	struct list *merged = ListNew();
 
-    return new;
+	struct node *n1 = list1->first;
+	struct node *n2 = list2->first;
+
+	while (n1 != NULL && n2 != NULL) {
+		if (n1->value <= n2->value) {
+			appendNode(merged, newNode(n1->value));
+			n1 = n1->next;
+		} else {
+			appendNode(merged, newNode(n2->value));
+			n2 = n2->next;
+		}
+	}
+
+	struct node *remaining = (n1 != NULL) ? n1 : n2;
+	while (remaining != NULL) {
+		appendNode(merged, newNode(remaining->value));
+		remaining = remaining->next;
+	}
+
+	return merged;
 }
-

@@ -1,0 +1,6 @@
+Question 2
+
+What is the maximum input size? Justify your answer.
+
+1003
+

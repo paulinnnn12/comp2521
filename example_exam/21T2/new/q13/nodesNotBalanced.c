@@ -1,5 +1,3 @@
-// nodesNotBalanced.c ... implementation of nodesNotBalanced function
-
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -7,49 +5,33 @@
 
 #include "BSTree.h"
 
-int levelFind(struct node *t, int level) {
-    if (t == NULL) {
-        return level;
-    }
+// Computes the height of the subtree rooted at t (empty = -1, a single
+// leaf = 0), and increments *count once for every node whose left and
+// right subtree heights differ by more than 1.
+static int heightAndCount(struct node *t, int *count) {
+	if (t == NULL) {
+		return -1;
+	}
 
-    int left = levelFind(t->left, level + 1);
-    int right = levelFind(t->right, level + 1);
-    return left > right ? left : right;
+	int leftHeight = heightAndCount(t->left, count);
+	int rightHeight = heightAndCount(t->right, count);
+
+	int diff = leftHeight - rightHeight;
+	if (diff < 0) diff = -diff;
+	if (diff > 1) {
+		(*count)++;
+	}
+
+	return 1 + (leftHeight > rightHeight ? leftHeight : rightHeight);
 }
-bool balance(struct node *t) {
-    if (t->right == NULL && t->left != NULL) {
-        if (levelFind(t->left, 0) > 1) {
-            return false;
-        }
-    } else if (t->right != NULL && t->left == NULL) {
-        if (levelFind(t->right, 0) > 1) {
-            return false;
-        }
-    } else {
-        int left = levelFind(t->left, 0);
-        int right = levelFind(t->right, 0);
-        if (abs(left - right) > 1) {
-            return false;
-        }
-    }
-    return true;
-}
-int helper(struct node *t, int count) {
-    if (t == NULL || (t->right == NULL && t->left == NULL)) {
-        return count;
-    }
-    if (!balance(t)) count ++;
-    if (t->right == NULL && t->left != NULL) {
-        return helper(t->left, count);
-    } else if (t->right != NULL && t->left == NULL) {
-        return helper(t->right, count);
-    } else {
-        return helper(t->left, count) + helper(t->right, count);
-    }
-    
-}
+
+// Worst case time complexity of this solution: O(n), where n is the
+// number of nodes - each node's height is computed exactly once via a
+// single post-order traversal (rather than recomputing height from
+// scratch at every node, which would cost O(n^2) in the worst case on
+// a skewed tree).
 int nodesNotBalanced(struct node *t) {
-    int count = 0;
-    return helper(t, count);
+	int count = 0;
+	heightAndCount(t, &count);
+	return count;
 }
-

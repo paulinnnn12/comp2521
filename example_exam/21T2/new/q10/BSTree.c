@@ -24,6 +24,7 @@ struct node *BSTreeNew(void) {
     return NULL;
 }
 
+
 // Frees all memory associated with a BSTree
 void BSTreeFree(struct node *t) {
     if (t != NULL) {
